@@ -6,11 +6,12 @@ import Testimonials from '../../components/sections/Testimonials.jsx'
 import Footer from '../../layout/Footer.jsx'
 
 export default function Overlay({
+  ref,
   setPizzaIndex,
   onCustomize,
 }) {
   return (
-    <div className="overlay">
+    <div className="overlay" ref={ref}>
       <Hero setPizzaIndex={setPizzaIndex} />
       <Features />
       <Menu onCustomize={onCustomize} />

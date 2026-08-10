@@ -18,7 +18,18 @@ import {
   PIZZA_LERP_FACTOR,
   PIZZA_SPIN_SPEED,
   PLACEHOLDER_SELECTORS,
+  SCROLL_REFERENCE_PAGES,
 } from '../constant/index.js'
+
+function getThresholds(pages) {
+  const scale = pages > 0 ? SCROLL_REFERENCE_PAGES / pages : 1
+  return {
+    heroEnd: HERO_END * scale,
+    featuresEnd: FEATURES_END * scale,
+    menuArrive: MENU_ARRIVE * scale,
+    menuEnd: MENU_END * scale,
+  }
+}
 
 function getPlaceholderParams(el, zVal, state) {
   if (!el) return null
@@ -55,11 +66,12 @@ function fallbackParams(phaseState) {
   }
 }
 
-function resolveTarget(offset, heroParams, featuresParams, menuParams) {
+function resolveTarget(offset, heroParams, featuresParams, menuParams, thresholds) {
+  const { heroEnd, featuresEnd, menuArrive, menuEnd } = thresholds
   const menuY = menuParams.y + MENU_Y_OFFSET
   const menuScale = menuParams.scale * MENU_SCALE_FACTOR
 
-  if (offset <= HERO_END) {
+  if (offset <= heroEnd) {
     return {
       x: heroParams.x,
       y: heroParams.y,
@@ -69,8 +81,8 @@ function resolveTarget(offset, heroParams, featuresParams, menuParams) {
     }
   }
 
-  if (offset <= FEATURES_END) {
-    const t = (offset - HERO_END) / (FEATURES_END - HERO_END)
+  if (offset <= featuresEnd) {
+    const t = (offset - heroEnd) / (featuresEnd - heroEnd)
     return {
       x: MathUtils.lerp(heroParams.x, featuresParams.x, t),
       y: MathUtils.lerp(heroParams.y, featuresParams.y, t),
@@ -80,8 +92,8 @@ function resolveTarget(offset, heroParams, featuresParams, menuParams) {
     }
   }
 
-  if (offset <= MENU_ARRIVE) {
-    const t = (offset - FEATURES_END) / (MENU_ARRIVE - FEATURES_END)
+  if (offset <= menuArrive) {
+    const t = (offset - featuresEnd) / (menuArrive - featuresEnd)
     return {
       x: MathUtils.lerp(featuresParams.x, menuParams.x, t),
       y: MathUtils.lerp(featuresParams.y, menuY, t),
@@ -91,7 +103,7 @@ function resolveTarget(offset, heroParams, featuresParams, menuParams) {
     }
   }
 
-  if (offset <= MENU_END) {
+  if (offset <= menuEnd) {
     return {
       x: menuParams.x,
       y: menuY,
@@ -101,7 +113,7 @@ function resolveTarget(offset, heroParams, featuresParams, menuParams) {
     }
   }
 
-  const t = Math.min((offset - MENU_END) / (1 - MENU_END), 1)
+  const t = Math.min((offset - menuEnd) / (1 - menuEnd), 1)
   return {
     x: menuParams.x,
     y: MathUtils.lerp(menuY, EXIT_STATE.position[1], t),
@@ -123,6 +135,7 @@ export function useScrollPizzaTransform() {
     group.rotation.y += delta * PIZZA_SPIN_SPEED
 
     const offset = scroll.offset
+    const thresholds = getThresholds(scroll.pages)
 
     const heroEl = document.querySelector(PLACEHOLDER_SELECTORS.hero)
     const featuresEl = document.querySelector(PLACEHOLDER_SELECTORS.features)
@@ -136,13 +149,13 @@ export function useScrollPizzaTransform() {
     const menuParams =
       getPlaceholderParams(menuEl, MENU_STATE.position[2], state) || fallbackParams(MENU_STATE)
 
-    const shouldBeFront = offset > FEATURES_END
+    const shouldBeFront = offset > thresholds.featuresEnd
     if (shouldBeFront !== inFront.current) {
       inFront.current = shouldBeFront
       state.gl.domElement.style.zIndex = shouldBeFront ? CANVAS_Z_FRONT : CANVAS_Z_BEHIND
     }
 
-    const target = resolveTarget(offset, heroParams, featuresParams, menuParams)
+    const target = resolveTarget(offset, heroParams, featuresParams, menuParams, thresholds)
 
     group.position.x = MathUtils.lerp(group.position.x, target.x, PIZZA_LERP_FACTOR)
     group.position.y = MathUtils.lerp(group.position.y, target.y, PIZZA_LERP_FACTOR)

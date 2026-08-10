@@ -1,5 +1,7 @@
 export const SCROLL_PAGES = 6.2
 
+export const SCROLL_REFERENCE_PAGES = 6.2
+
 export const SCROLL_DAMPING = 0.1
 
 export const SCROLL_TO_DURATION = 500

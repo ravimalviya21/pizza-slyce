@@ -1,10 +1,10 @@
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Environment, Scroll, ScrollControls } from '@react-three/drei'
 import { ConfigProvider } from 'antd'
 import Overlay from './Overlay.jsx'
 import { PizzaModel } from '../../components/common/PizzaModel.jsx'
-import { useScrollPizzaTransform } from '../../hooks/index.js'
+import { useOverlayPages, useScrollPizzaTransform } from '../../hooks/index.js'
 import {
   AMBIENT_LIGHT_INTENSITY,
   antdTheme,
@@ -13,7 +13,6 @@ import {
   ENVIRONMENT_PRESET,
   LANDING_CAMERA,
   SCROLL_DAMPING,
-  SCROLL_PAGES,
 } from '../../constant/index.js'
 
 function ScrollDrivenPizza({ pizzaIndex }) {
@@ -27,6 +26,9 @@ function ScrollDrivenPizza({ pizzaIndex }) {
 }
 
 export default function Home({ pizzaIndex, setPizzaIndex, onCustomize }) {
+  const [overlayEl, setOverlayEl] = useState(null)
+  const pages = useOverlayPages(overlayEl)
+
   return (
     <Canvas
       style={{ position: 'absolute', inset: 0, zIndex: 0 }}
@@ -43,7 +45,7 @@ export default function Home({ pizzaIndex, setPizzaIndex, onCustomize }) {
         position={DIRECTIONAL_LIGHT.position}
         intensity={DIRECTIONAL_LIGHT.intensity}
       />
-      <ScrollControls pages={SCROLL_PAGES} damping={SCROLL_DAMPING}>
+      <ScrollControls pages={pages} damping={SCROLL_DAMPING}>
         <Suspense fallback={null}>
           <ScrollDrivenPizza pizzaIndex={pizzaIndex} />
           <Environment preset={ENVIRONMENT_PRESET} background={false} />
@@ -51,6 +53,7 @@ export default function Home({ pizzaIndex, setPizzaIndex, onCustomize }) {
         <Scroll html style={{ width: '100%' }}>
           <ConfigProvider theme={antdTheme}>
             <Overlay
+              ref={setOverlayEl}
               pizzaIndex={pizzaIndex}
               setPizzaIndex={setPizzaIndex}
               onCustomize={onCustomize}

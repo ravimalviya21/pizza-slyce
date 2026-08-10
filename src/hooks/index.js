@@ -1,4 +1,5 @@
 export * from './useModelNormalization.js'
+export * from './useOverlayPages.js'
 export * from './usePizzaCarousel.js'
 export * from './usePizzaPricing.js'
 export * from './useQuantities.js'

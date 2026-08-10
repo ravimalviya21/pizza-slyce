@@ -1,6 +1,6 @@
-import { SCROLL_PAGES, SCROLL_TO_DURATION } from '../constant/index.js'
+import { SCROLL_TO_DURATION } from '../constant/index.js'
 
-function getScrollProxyEl() {
+export function getScrollProxyEl() {
   const canvas = document.querySelector('canvas')
   const target = canvas?.parentElement
   if (!target) return null
@@ -15,9 +15,8 @@ export function scrollToSection(id) {
   if (!target || !el) return
 
   const rect = target.getBoundingClientRect()
-  const viewportHeight = window.innerHeight
-  const transformRange = viewportHeight * (SCROLL_PAGES - 1)
   const scrollRange = el.scrollHeight - el.clientHeight
+  const transformRange = scrollRange - el.clientHeight
   const rawDelta = transformRange > 0 ? rect.top * (scrollRange / transformRange) : rect.top
 
   const from = el.scrollTop
